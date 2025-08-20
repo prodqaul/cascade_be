@@ -10,7 +10,11 @@ module.exports = {
           title: "Nice clothes",
           description: "The bread was moldy.",
           status: "New",
-          images: ["img1.jpg", "img2.jpg"],
+          images: [
+            "https://res.cloudinary.com/dkdzqcq5y/image/upload/v1755628629/cloudinary:/797374383719442/khoh8gmjk7upo7kmmnoc.jpg",
+            "https://res.cloudinary.com/dkdzqcq5y/image/upload/v1755628631/cloudinary:/797374383719442/nglcsna4xrrqe5ylcyrc.jpg",
+            "https://res.cloudinary.com/dkdzqcq5y/image/upload/v1755628633/cloudinary:/797374383719442/vplqgohbjuqoci8wmwzw.jpg",
+          ],
           categoryId: "22222222-2222-2222-2222-222222222222",
           userId: "7121d946-7265-45a1-9ce3-3da1789e657e",
           isAvailable: false,
@@ -21,6 +25,7 @@ module.exports = {
       {}
     );
   },
+
   async down(queryInterface) {
     await queryInterface.bulkDelete("Products", null, {});
   },

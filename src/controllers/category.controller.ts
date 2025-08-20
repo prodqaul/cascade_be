@@ -5,7 +5,6 @@ import { read_function, insert_function } from "../utils/db_methods";
 interface CategoryAttributes {
   id?: string;
   categoryName: string;
-  organizationId: string;
 }
 
 // Create Category
@@ -14,42 +13,30 @@ export const createCategory = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { categoryName, organizationId } = req.body;
-    if (!organizationId) {
-      sendResponse(res, 400, "BAD REQUEST", "organizationId is required");
-      return;
-    }
+    const { categoryName } = req.body;
 
-    const organization = await read_function<any>(
-      "Organization" as any,
-      "findOne",
-      { where: { id: organizationId } }
-    );
-    if (!organization) {
-      sendResponse(res, 404, "NOT FOUND", "Organization not found");
+    if (!categoryName) {
+      sendResponse(res, 400, "BAD REQUEST", "categoryName is required");
       return;
     }
 
     const existingCategory = await read_function<CategoryAttributes | null>(
       "Category" as any,
       "findOne",
-      { where: { organizationId } }
+      { where: { categoryName } }
     );
+
     if (existingCategory) {
-      sendResponse(
-        res,
-        409,
-        "CONFLICT",
-        "Category already exists for this organization"
-      );
+      sendResponse(res, 409, "CONFLICT", "Category already exists");
       return;
     }
 
     const newCategory = await insert_function<CategoryAttributes>(
       "Category" as any,
       "create",
-      { categoryName, organizationId }
+      { categoryName }
     );
+
     sendResponse(
       res,
       201,
@@ -97,10 +84,12 @@ export const getCategoryById = async (
       "findOne",
       { where: { id } }
     );
+
     if (!category) {
       sendResponse(res, 404, "NOT FOUND", "Category not found");
       return;
     }
+
     sendResponse(
       res,
       200,
@@ -121,21 +110,25 @@ export const updateCategory = async (
   try {
     const { id } = req.params;
     const { categoryName } = req.body;
+
     const category = await read_function<CategoryAttributes | null>(
       "Category" as any,
       "findOne",
       { where: { id } }
     );
+
     if (!category) {
       sendResponse(res, 404, "NOT FOUND", "Category not found");
       return;
     }
+
     await insert_function<CategoryAttributes>(
       "Category" as any,
       "update",
       { categoryName },
       { where: { id } }
     );
+
     sendResponse(res, 200, "SUCCESS", "Category updated successfully");
   } catch (error) {
     sendResponse(res, 500, "ERROR", "Internal server error");
@@ -149,15 +142,18 @@ export const deleteCategory = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+
     const category = await read_function<CategoryAttributes | null>(
       "Category" as any,
       "findOne",
       { where: { id } }
     );
+
     if (!category) {
       sendResponse(res, 404, "NOT FOUND", "Category not found");
       return;
     }
+
     await read_function<any>("Category" as any, "destroy", { where: { id } });
     sendResponse(res, 200, "SUCCESS", "Category deleted successfully");
   } catch (error) {
