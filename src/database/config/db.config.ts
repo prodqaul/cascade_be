@@ -22,23 +22,26 @@ switch (APP_MODE) {
 
 if (!db_uri) {
   console.error(
-    "Error: Database URI is not defined. Please check your environment variables."
+    "❌ Error: Database URI is not defined. Please check your environment variables."
   );
   process.exit(1);
 }
 
 const isLocal = DB_HOST_MODE === "local";
 const sslRequired = process.env.SSL === "true";
+
 const dialect_option = isLocal
   ? {}
-  : {
+  : sslRequired
+  ? {
       ssl: {
-        require: sslRequired,
-        rejectUnauthorized: process.env.SSL === "false" ? false : true,
+        require: true,
+        rejectUnauthorized: false,
       },
-    };
+    }
+  : {};
 
-export const sequelizeConnection: Sequelize = new Sequelize(db_uri, {
+const sequelizeConnection: Sequelize = new Sequelize(db_uri, {
   dialect: "postgres",
   dialectOptions: dialect_option,
   logging: false,
@@ -54,9 +57,9 @@ export const connectionToDatabase = async () => {
   try {
     await sequelizeConnection.authenticate();
     await sequelizeConnection.sync();
-    console.log("Database connected successfully:", db_uri);
+    console.log("✅ Database connected successfully:", db_uri);
   } catch (error) {
-    console.error("Unable to connect to the database:", error);
+    console.error("❌ Unable to connect to the database:", error);
     process.exit(1);
   }
 };
@@ -72,4 +75,6 @@ Object.keys(db_models).forEach((key) => {
 });
 
 const database_models = { ...db_models };
+
 export default database_models;
+export { sequelizeConnection };
