@@ -11,7 +11,7 @@ interface ItemsAttributes {
   userId?: string;
   status?: string;
   isAvailable?: boolean;
-  price?: number; // 👈 new
+  price?: number;
 }
 
 export class Products
@@ -95,7 +95,7 @@ const product_model = (sequelize: Sequelize) => {
         defaultValue: false,
       },
       price: {
-        type: DataTypes.DECIMAL(10, 2), // 👈 new
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
         defaultValue: 0.0,
       },
