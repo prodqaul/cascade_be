@@ -224,7 +224,6 @@ export const getProductById = async (
 
     let product;
 
-    // Fix role check to match your getProducts logic
     const isSeller =
       user?.Roles?.roleName === "SELLER" || user?.role === "SELLER";
 
@@ -244,8 +243,7 @@ export const getProductById = async (
         "findOne",
         condition_two
       );
-      // Add debug log
-      console.log("Non-seller product query result:", product);
+
       if (!product) {
         sendResponse(res, 404, "NOT FOUND", "Product not found or unavailable");
         return;
