@@ -204,56 +204,55 @@ export const getProductById = async (
   res: Response
 ): Promise<void> => {
   try {
-    product_id = category_utils(req, res).getId;
+    const product_id = category_utils(req, res).getId;
     const isValidUUID = category_utils(req, res).isValidUUID(product_id);
+
     if (!isValidUUID) {
+      sendResponse(res, 400, "INVALID", "Invalid product ID");
       return;
     }
+
     const user = (req as ExpandRequest).user;
-    const sellerId = user?.id;
-    const condition_one = { where: { id: product_id, sellerId }, include };
+    const userId = user?.id;
+
+    // Conditions
+    const condition_one = { where: { id: product_id, userId }, include };
     const condition_two = {
-      where: { id: product_id, isAvailable: false },
+      where: { id: product_id, isAvailable: true },
       include,
     };
+
     let product;
 
-    if (user?.role === "SELLER") {
+    // Fix role check to match your getProducts logic
+    const isSeller =
+      user?.Roles?.roleName === "SELLER" || user?.role === "SELLER";
+
+    if (isSeller) {
       product = await read_function<ProductAttributes>(
         "Products",
         "findOne",
         condition_one
       );
       if (!product) {
-        sendResponse(res, 404, "NOT FOUND", "Product not owned by you found");
+        sendResponse(res, 404, "NOT FOUND", "No product owned by you found");
         return;
       }
-      sendResponse(
-        res,
-        200,
-        "SUCCESS",
-        "Product fetched successfully!",
-        product
-      );
     } else {
       product = await read_function<ProductAttributes>(
         "Products",
         "findOne",
         condition_two
       );
+      // Add debug log
+      console.log("Non-seller product query result:", product);
       if (!product) {
-        sendResponse(res, 404, "NOT FOUND", "Product not found or not owned!");
+        sendResponse(res, 404, "NOT FOUND", "Product not found or unavailable");
         return;
       }
-
-      sendResponse(
-        res,
-        200,
-        "SUCCESS",
-        "Product fetched successfully!",
-        product
-      );
     }
+
+    sendResponse(res, 200, "SUCCESS", "Product fetched successfully!", product);
   } catch (error: unknown) {
     sendResponse(
       res,
